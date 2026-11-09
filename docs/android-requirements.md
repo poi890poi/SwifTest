@@ -67,6 +67,21 @@ These are framework contracts, not a claim of exhaustive device compatibility.
 
 ## Supported interfaces and present limits
 
+Ordinary image scripts must need only Python actions and their cropped images.
+Catalogs, custom profiles, OCR, named intent blocks and checkpoints are optional.
+Image filenames use the existing template matching and input checks, including
+unique matches, fresh observations and explicit failures. Existing catalog names
+take precedence; the shorthand does not broaden matching or repeat input.
+
+This authoring decision follows Airtest's direct image/action model
+([official image-script guide](https://airtest.doc.io.netease.com/en/IDEdocs/airtest_framework/3_airtest_image/),
+checked November 9, 2026). The transferable lesson is to keep the script beside
+its assets and let the runner own setup. SwifTest has no AirtestIDE recorder or
+inline-image editor; its example gallery makes assets reviewable. Local validation
+covers image-path resolution, catalog precedence, ambiguity, missing files, the
+complete sample flow and inclusion of its PNGs in the source archive. This is an
+API/example change, not evidence of a speed improvement or equivalent game coverage.
+
 * **Python API:** `Session`, selectors and context-bound convenience functions.
   The CLI creates one session per file; test functions in that file share it.
   It accepts functions with no arguments or one parameter named `session`.

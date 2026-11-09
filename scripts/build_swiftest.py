@@ -33,6 +33,8 @@ def stage_source(root, destination):
     for required in ("swiftest/__init__.py", "swiftest/assets/IntentScreenshot.java"):
         if root / required not in files:
             raise FileNotFoundError(root / required)
+    # Shipped example inputs are product assets, unlike screenshots in artifacts/.
+    files += sorted((root / "examples/genshin/assets").glob("*.png"))
     for source in files:
         target = destination / source.relative_to(root)
         target.parent.mkdir(parents=True, exist_ok=True)

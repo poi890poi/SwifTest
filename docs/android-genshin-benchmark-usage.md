@@ -1,5 +1,9 @@
 # Genshin benchmark setup and usage (supplement)
 
+For ordinary script authoring, start with the much shorter
+[image script and included templates](../examples/genshin/README.md).
+This supplement covers the instrumented benchmark, not the minimum user script.
+
 Use this guide for the current source checkout. Read the
 [benchmark requirements](android-genshin-benchmark-requirements.md) for the task and timing contract and the
 [API guide](swiftest.md) for custom selectors and tests. Commands below use

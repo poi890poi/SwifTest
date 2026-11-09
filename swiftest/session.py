@@ -11,7 +11,7 @@ import numpy as np
 from .capture import Capture
 from .device import Android, DeviceError
 from .ocr import LocalOCR
-from .targets import Absent, Box, Pixel, Position
+from .targets import Absent, Box, Pixel, Position, Template
 from .popups import PopupRule, handle_popup
 from .evaluation import VisualCache
 from .outcome import Outcomes, tracked
@@ -226,9 +226,11 @@ class Session(Outcomes):
 
     def resolve(self, target):
         if isinstance(target, str):
-            if target not in self.targets:
-                raise ValueError("Unknown UI target: " + target)
-            return self.targets[target]
+            if target in self.targets:
+                return self.targets[target]
+            if Path(target).suffix.lower() in {".png", ".jpg", ".jpeg", ".bmp", ".webp"}:
+                return Template(target)
+            raise ValueError("Unknown UI target: " + target)
         return selector(target)
 
     def register(self, name, target):

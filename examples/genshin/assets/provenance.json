@@ -1,0 +1,83 @@
+{
+  "captured": "2026-11-07",
+  "resolution": [
+    2400,
+    1080
+  ],
+  "language": "Traditional Chinese",
+  "source": "Local Genshin setup captures; full screens remain private.",
+  "templates": {
+    "entry.png": {
+      "source": "entry-setup2.png",
+      "crop": [
+        0.441,
+        0.431,
+        0.56,
+        0.496
+      ],
+      "source_sha256": "d4e9dd934e9e9fbf7f8ce41ebe7f9eeaaabe15fdae80e03f20dc31fecfb70df1",
+      "sha256": "6e4c768de69b197661fb6ac2cdcdb5bb212c66c3ad4b0067c46dbc8a29ccb576",
+      "bytes": 33476
+    },
+    "door.png": {
+      "source": "preflight-progress.png",
+      "crop": [
+        0.463,
+        0.918,
+        0.535,
+        0.946
+      ],
+      "source_sha256": "556c9443838ecf86c8ec253f0c2c2cf1ebef4c5a439ab985bea49d8523c5278c",
+      "sha256": "16efe8e973915be4661a379dbe56174d4b836674068b3089b68eda773f139bb0",
+      "bytes": 11423
+    },
+    "level.png": {
+      "source": "awake.png",
+      "crop": [
+        0.397,
+        0.909,
+        0.414,
+        0.928
+      ],
+      "source_sha256": "52d7ab81edf339f5f9b7286d3ee9a6419257f78a7025e0e8b93fc51562c575b1",
+      "sha256": "fb5448ef9a4d293b4faaeec2e5ec276c3e26284da5211271dca6793c6856e506",
+      "bytes": 2026
+    },
+    "map.png": {
+      "source": "map-setup.png",
+      "crop": [
+        0.843,
+        0.932,
+        0.89,
+        0.958
+      ],
+      "source_sha256": "37bb98f0fb35ea072e9048f93b9acaddf837819c0a45286c9cc916fdf604d5a0",
+      "sha256": "1d8000ad1536032ae41440f9671d2d5e09bc1bf4f41b8bf99ce5e73786aadc36",
+      "bytes": 7553
+    },
+    "waypoint_title.png": {
+      "source": "selected-setup.png",
+      "crop": [
+        0.74,
+        0.024,
+        0.799,
+        0.057
+      ],
+      "source_sha256": "4f4eb2285264c951f1fd11b1dfeeaca01e68b9ecc3d232f92e6bfd6d2e6dcd7e",
+      "sha256": "493d43685f12c60449a0bf65fdc5476bd623db9d6f5b97fac8d886d5e7787f95",
+      "bytes": 11720
+    },
+    "teleport.png": {
+      "source": "selected-setup.png",
+      "crop_pixels": [
+        1710,
+        950,
+        2300,
+        1033
+      ],
+      "source_sha256": "4f4eb2285264c951f1fd11b1dfeeaca01e68b9ecc3d232f92e6bfd6d2e6dcd7e",
+      "sha256": "4cc0726996108eb151eeed82f9ddbe1769c6b77769f58cff7e444a085953d39e",
+      "bytes": 24386
+    }
+  }
+}

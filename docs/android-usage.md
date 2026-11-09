@@ -9,6 +9,36 @@ This guide builds a small test project. See the
 [framework requirements](android-requirements.md) for contracts and limits and the
 [API reference](swiftest.md) for more selector options.
 
+## Shortest image script
+
+Put the cropped controls `play.png`, `confirm.png` and `ready.png` beside this file:
+
+```python
+from swiftest import open_app, touch
+
+open_app("com.example.app")
+touch("play.png")
+touch("confirm.png", expect="ready.png")
+```
+
+Replace the package and images with your app's controls, then run
+`swiftest run test_game.py --serial YOUR_DEVICE_SERIAL` after installation.
+An image filename is shorthand for `Template(filename)`. Paths are relative to
+the script, not the terminal's working directory. The same shorthand works with
+`wait`, `wait_any`, `exists`, assertions, swipe endpoints and JSON steps.
+Supported filename suffixes are `.png`, `.jpg`, `.jpeg`, `.bmp` and `.webp`.
+A missing or invalid file is an error, including for optional lookups.
+
+No catalog or OCR is needed. Keep `Template(...)` for matching options, `Text(...)`
+for rendered text and `Node(...)` for native attributes. A registered catalog name
+takes precedence over a filename, so existing names such as `save.png` keep their
+meaning. Unknown names without an image suffix remain errors.
+
+The [Genshin example](../examples/genshin/README.md) includes a complete script
+and its actual PNGs. AirtestIDE displays templates inline in its editor; SwifTest
+currently shows them in the repository's example gallery, not in a visual recorder.
+The catalog-based workflow below is optional and useful when sharing selectors.
+
 ## 1. Install and select a device
 
 Install Python and Android SDK Platform Tools, enable USB debugging on your phone

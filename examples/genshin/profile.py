@@ -1,4 +1,6 @@
-"""Genshin screen recognition and action policies for the example intent.
+"""Instrumented OCR benchmark profile, not the ordinary user script.
+
+Use test_teleport.py and the sibling README for the short image-based example.
 
 Run from the repository root with Python and OpenCV available. Captures and logs
 are kept under ignored artifacts/. Coordinates are always captured-screen pixels.

@@ -1,4 +1,6 @@
-"""Airtest implementation of launch -> map -> waypoint -> teleport -> arrival.
+"""Instrumented Airtest benchmark: launch -> map -> waypoint -> teleport -> arrival.
+
+This includes measurement plumbing; it is not a minimal Airtest authoring example.
 
 Python only. Install airtest==1.4.3, then pass --serial, --assets and --output.
 Assets are local screen crops described by assets/manifest.json. They are not

@@ -3,22 +3,25 @@
 **Write intent. Run fast.**
 
 SwifTest is a standalone Python library and command-line runner for Android games
-and apps. Define named image or rendered-text selectors once, then write actions
-and expected outcomes. Black-box games need only pixels and device input; no
-game SDK or UI tree is required.
+and apps. Put image crops beside a Python script, then write the actions:
 
 ```python
-def test_claim_reward(session):
-    with session.intent("Claim daily reward"):
-        session.touch("claim", expect="reward_received")
-        session.checkpoint({"reward": "received"})
-        session.touch("close", expect="home")
-    return {"reward": "received", "screen": "home"}
+from swiftest import open_app, touch
+
+open_app("com.example.app")
+touch("play.png")
+touch("confirm.png", expect="ready.png")
 ```
 
-The names above come from your project's `ui.json` catalog. The framework owns
-waiting, unique-match checks, guarded input and postcondition verification.
-Reports retain success or the last valid result and failed intent.
+Replace the package and PNGs with your app and its cropped controls. Run with
+`swiftest run test_game.py --serial YOUR_DEVICE_SERIAL`. Image paths are relative
+to the script. SwifTest waits, finds a unique match, taps and checks `expect`.
+No catalog, profile, OCR or session setup is required for an image script.
+
+For a complete example with actual PNGs, see the
+[Genshin script and template gallery](examples/genshin/README.md).
+`Template(...)` adds options such as regions, scales and masks. Named catalogs,
+rendered text, native selectors and explicit checkpoints remain available when needed.
 
 ## Start here
 
@@ -36,12 +39,12 @@ authorize the computer on the phone. Clone this repository, then install from it
 ```text
 git clone git@github.com:poi890poi/SwifTest.git
 cd SwifTest
-python -m pip install ".[ocr]"
+python -m pip install .
 python -m swiftest devices
 python -m swiftest run path/to/test_game.py --serial YOUR_DEVICE_SERIAL
 ```
 
-`ocr` enables local rendered-text recognition. Use `.[ocr-fast]` for the optional
+Install `.[ocr]` for local rendered-text recognition. Use `.[ocr-fast]` for the optional
 OpenVINO CPU adapter, or `.[scrcpy]` for streaming capture. Template-only use needs
 no OCR extra. This repository and its source archives contain the documentation,
 examples, tests and build script; no AriaTrace checkout is needed.
@@ -81,6 +84,7 @@ a region still needs evaluation. Streaming supplies frame notifications, not
 semantic game events. Regional OCR can change recognition and can be slower with
 some scaling settings. See the [measured results and limits](docs/android-visual-evaluation-2026-11-07.md).
 
-Historical benchmark artifacts, private screenshots, copied dependencies and
+The six small PNGs in `examples/genshin/assets/` are shipped example inputs.
+Historical benchmark artifacts, full-screen captures, copied dependencies and
 device recordings are not included. They are not installation or test requirements.
 See [project origin](docs/origin.md) for the source provenance.

@@ -3,7 +3,7 @@
 SwifTest is an installable Python library and command-line runner for testing Android apps and games. Tests specify what to open, touch, or verify. The library owns device selection, capture, lookup, waiting, retries and failure reporting. App-specific screen recognition belongs in the test project.
 
 Start with the [framework usage guide](android-usage.md) and
-[copyable starter project](../examples/starter/README.md). The
+[image script with shipped templates](../examples/genshin/README.md). The
 [requirements](android-requirements.md) define framework ownership, supported
 workflows, correctness, extension boundaries and performance acceptance. This page
 provides the detailed API and historical validation reference.
@@ -104,6 +104,7 @@ The runner accepts a Python file, a JSON intent, or a directory of `test_*.py` a
 
 | API | Behavior |
 |---|---|
+| `touch("assets/button.png", expect="assets/done.png")` | Use script-relative image filenames with the standard template defaults. Also supported by wait/query/assert/swipe APIs and JSON steps. Registered catalog names take precedence; missing image files fail explicitly. |
 | `Node(resource_id=..., text=..., description=..., class_name=...)` | Match native hierarchy attributes by equality. Each supplied attribute must match. Native actions can run without a screenshot. |
 | `Text("Continue")` | Match a rendered line with optional local OCR. |
 | `Position(x,y)`, `Pixel(x,y)` | Target normalized or pixel coordinates in the current display or parent dialog. |

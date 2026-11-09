@@ -1,0 +1,13 @@
+include README.md MANIFEST.in .gitignore
+recursive-include docs *.md
+recursive-include examples *.py *.json *.md
+recursive-include scripts *.py
+recursive-include tests *.py *.java *.xml
+recursive-include benchmarks/android *.py *.java *.md
+global-exclude *.pyc *.pyo
+prune .tmp
+prune .tools
+prune .venv
+prune artifacts
+prune build
+prune dist

@@ -110,6 +110,8 @@ The runner accepts a Python file, a JSON intent, or a directory of `test_*.py` a
 | `Position(x,y)`, `Pixel(x,y)` | Target normalized or pixel coordinates in the current display or parent dialog. |
 | `Template(file, ...)` | Search a bounded region at specified scales. A binary mask excludes changing pixels. `expected` and `tolerance` constrain the center in normalized parent coordinates. `size` constrains width and height in pixels. |
 | `Dialog(parent, child)` | Locate exactly one dialog, then resolve its child in the dialog's bounds on the same observation. Supports a verified local button template or a known relative anchor. |
+| `Relative(target, below=anchor, ...)` | Filter targets by `above`, `below`, `left_of`, `right_of` or `near` unique anchors on the same observation. Multiple relations must all hold. Directions compare non-overlapping bounds; near uses normalized center distance (`distance=.1` default). |
+| `open_app(package, through=[...], expect=ready)` | Launch, pass remaining ordered entry buttons at most once each, and verify readiness. A later visible entry skips earlier entries; already-ready skips all. Ambiguous entries withhold input. No profile or script polling is required. |
 | `AnyOf(...)`, `Absent(target)` | Select a localized alternative or verify disappearance. |
 | `touch(target, expect=..., offset=(x,y))` | Wait for a unique target, apply an offset in pixels, screen fractions or target fractions, tap and verify the requested next state. |
 | `swipe`, `keyevent`, `text`, `snapshot` | Swipe, send an Android key, type into the focused field, or capture an image. Printable ASCII uses ADB. The optional `unicode` extra routes other text through uiautomator2. |

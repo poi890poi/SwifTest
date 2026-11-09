@@ -11,7 +11,7 @@ import numpy as np
 from .capture import Capture
 from .device import Android, DeviceError
 from .ocr import LocalOCR
-from .targets import Absent, Box, Pixel, Position, Template
+from .targets import Absent, AnyOf, Box, Dialog, Pixel, Position, Relative, Template, Variants
 from .popups import PopupRule, handle_popup
 from .evaluation import VisualCache
 from .outcome import Outcomes, tracked
@@ -231,6 +231,15 @@ class Session(Outcomes):
             if Path(target).suffix.lower() in {".png", ".jpg", ".jpeg", ".bmp", ".webp"}:
                 return Template(target)
             raise ValueError("Unknown UI target: " + target)
+        if type(target) is Dialog:
+            return Dialog(self.resolve(target.parent), self.resolve(target.child))
+        if type(target) is Relative:
+            return Relative(self.resolve(target.target), distance=target.distance,
+                            **{k: self.resolve(v) for k, v in target.relations.items()})
+        if type(target) is Absent:
+            return Absent(self.resolve(target.target))
+        if type(target) in (AnyOf, Variants):
+            return type(target)(*(self.resolve(v) for v in target.alternatives))
         return selector(target)
 
     def register(self, name, target):
@@ -262,9 +271,36 @@ class Session(Outcomes):
         del self.popups[name]
 
     @tracked
-    def open(self, package, activity=None):
+    def open(self, package, activity=None, *, through=(), expect=None, timeout=None):
+        """Launch and pass any remaining declared entry buttons until ready.
+
+        ``through`` is an ordered list of possible entry targets. A visible later
+        target skips earlier ones; each is sent at most once. No game profile is
+        involved. The result condition takes priority over entry targets.
+        """
+        if not isinstance(through, (tuple, list)):
+            raise TypeError("through requires an ordered list of entry targets.")
+        if through and expect is None:
+            raise ValueError("Entry targets require an expected ready condition.")
+        pending = [self.resolve(t) for t in through]
+        if any(getattr(t, "condition_only", False) for t in pending):
+            raise ValueError("Entry targets must identify controls, not absence.")
+        ready = self.resolve(expect) if expect is not None else None
+        deadline = self._deadline(timeout)
         self.device.launch(package, activity)
         self.events.append({"open": package})
+        if ready is None:
+            return
+        while pending:
+            found, obs = self._points(pending, deadline, completed=ready,
+                                      first=True, exclusive=True)
+            if found is None:
+                return True
+            index, point = found
+            self._send_touch(point, obs)
+            pending = pending[index + 1:]
+        self._find(ready, deadline)
+        return True
 
     def stop(self, package):
         self.device.shell("am", "force-stop", package)
@@ -294,7 +330,8 @@ class Session(Outcomes):
         if remaining > 0:
             time.sleep(min(self.poll_interval, remaining))
 
-    def _points(self, targets, deadline, required=True, completed=None, first=False):
+    def _points(self, targets, deadline, required=True, completed=None, first=False,
+                exclusive=False):
         targets = [self.resolve(target) for target in targets]
         completed = self.resolve(completed) if completed is not None else None
         can_extend = deadline > time.monotonic()
@@ -335,16 +372,20 @@ class Session(Outcomes):
                 busy_since = now
                 self._pause(time.monotonic() + remaining, obs)
                 continue
-            if completed is not None and len(completed.matches(obs)) == 1:
+            completion = completed.matches(obs) if completed is not None else []
+            if len(completion) == 1:
                 return None, obs
             found = [target.matches(obs) for target in targets]
-            if first:
+            ambiguous = any(len(matches) > 1 for matches in found) or (
+                exclusive and (sum(map(len, found)) > 1 or len(completion) > 1))
+            if first and not (exclusive and ambiguous):
                 for index, matches in enumerate(found):
                     if len(matches) == 1:
                         box = matches[0]
+                        obs.boxes = [box]
                         point = targets[index].point(box) if hasattr(targets[index], "point") else box.center
                         return (index, point), obs
-            if all(len(matches) == 1 for matches in found):
+            if not first and all(len(matches) == 1 for matches in found):
                 obs.boxes = [matches[0] for matches in found]
                 return [
                     target.point(box) if hasattr(target, "point") else box.center
@@ -354,7 +395,7 @@ class Session(Outcomes):
             if remaining <= 0:
                 if not required:
                     return False, obs
-                if any(len(matches) > 1 for matches in found):
+                if ambiguous:
                     raise AmbiguousTargetError(
                         "Multiple matches; narrow the selector or its region."
                     )
@@ -375,6 +416,26 @@ class Session(Outcomes):
         if time.monotonic() - obs.created > 8:
             raise DeviceError("Observation too old to use for input.")
         return area
+
+    def _send_touch(self, point, obs, *, offset=(0, 0), offset_unit="pixels", duration=0):
+        """Dispatch from the observation that resolved the target, with shared guards."""
+        x, y = point
+        dx, dy = offset
+        if offset_unit not in ("pixels", "screen", "target"):
+            raise ValueError("Unknown offset unit.")
+        area = self._input_area(obs)
+        w, h = area.w, area.h
+        if offset_unit == "screen":
+            dx, dy = dx * (w - 1), dy * (h - 1)
+        if offset_unit == "target":
+            dx, dy = dx * obs.boxes[0].w, dy * obs.boxes[0].h
+        x, y = round(x + dx), round(y + dy)
+        if not (0 <= x < w and 0 <= y < h):
+            raise ValueError("Touch offset outside screen.")
+        self.device.tap(x, y, duration)
+        self.stats["input_events"] += 1
+        self.events.append({"touch": [x, y]})
+        return x, y
 
     @tracked
     def wait(self, target, timeout=None):
@@ -441,24 +502,8 @@ class Session(Outcomes):
                 return previous
             if point is False:
                 return False
-            x, y = point
-            dx, dy = offset
-            if offset_unit not in ("pixels", "screen", "target"):
-                raise ValueError("Unknown offset unit.")
-            # Node-only tests avoid transferring a screenshot to validate a native UI bound.
-            area = self._input_area(obs)
-            w, h = area.w, area.h
-            if offset_unit == "screen":
-                dx, dy = dx * (w - 1), dy * (h - 1)
-            if offset_unit == "target":
-                dx, dy = dx * obs.boxes[0].w, dy * obs.boxes[0].h
-            x, y = round(x + dx), round(y + dy)
-            if not (0 <= x < w and 0 <= y < h):
-                raise ValueError("Touch offset outside screen.")
-            self.device.tap(x, y, duration)
-            previous = (x, y)
-            self.stats["input_events"] += 1
-            self.events.append({"touch": [x, y]})
+            previous = self._send_touch(point, obs, offset=offset,
+                                        offset_unit=offset_unit, duration=duration)
             if expect is None:
                 return previous
             remaining = max(0, deadline - time.monotonic())

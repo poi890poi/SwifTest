@@ -357,6 +357,72 @@ class Template:
         return kept
 
 
+def _resolve(obs, value):
+    """Composite selectors accept the same filenames/names as direct actions."""
+    if hasattr(value, "matches"):
+        return value
+    if hasattr(obs, "session"):
+        return obs.session.resolve(value)
+    if isinstance(value, str):
+        return Template(value)
+    raise TypeError("Expected a selector or image filename.")
+
+
+class Relative:
+    """A target constrained by unique anchors on the same observation.
+
+    Directions require non-overlapping bounds. ``near`` measures center distance
+    in normalized viewport coordinates (or parent coordinates when scoped).
+    """
+
+    def __init__(self, target, *, above=None, below=None, left_of=None,
+                 right_of=None, near=None, distance=.1):
+        self.target = target
+        self.relations = {k: v for k, v in dict(above=above, below=below,
+                          left_of=left_of, right_of=right_of, near=near).items()
+                          if v is not None}
+        if not self.relations:
+            raise ValueError("Specify at least one spatial relation.")
+        if not math.isfinite(distance) or not 0 < distance <= math.sqrt(2):
+            raise ValueError("Near distance must be positive and at most sqrt(2).")
+        self.distance = distance
+
+    @property
+    def condition_only(self):
+        return any(getattr(t, "condition_only", False)
+                   for t in (self.target, *self.relations.values()))
+
+    def point(self, box):
+        return box.input_point or box.center
+
+    def matches(self, obs, scope=None):
+        target = _resolve(obs, self.target)
+        anchors = {k: _resolve(obs, v) for k, v in self.relations.items()}
+        if any(getattr(t, "condition_only", False) for t in (target, *anchors.values())):
+            raise ValueError("Spatial relations need real targets and anchor bounds.")
+        bounds = {k: a.matches(obs, scope) for k, a in anchors.items()}
+        if any(len(boxes) != 1 for boxes in bounds.values()):
+            return []
+        area = (scope or obs.viewport) if "near" in bounds else None
+
+        def accepts(box, kind, anchor):
+            if kind == "above":
+                return box.y + box.h <= anchor.y
+            if kind == "below":
+                return box.y >= anchor.y + anchor.h
+            if kind == "left_of":
+                return box.x + box.w <= anchor.x
+            if kind == "right_of":
+                return box.x >= anchor.x + anchor.w
+            dx = (box.center[0] - anchor.center[0]) / max(1, area.w - 1)
+            dy = (box.center[1] - anchor.center[1]) / max(1, area.h - 1)
+            return math.hypot(dx, dy) <= self.distance
+
+        return [replace(box, input_point=target.point(box) if hasattr(target, "point") else box.center)
+                for box in target.matches(obs, scope)
+                if all(accepts(box, kind, anchors[0]) for kind, anchors in bounds.items())]
+
+
 @dataclass(frozen=True)
 class Dialog:
     parent: object
@@ -369,13 +435,15 @@ class Dialog:
         )
 
     def matches(self, obs, scope=None):
-        parents = self.parent.matches(obs, scope)
+        parents = _resolve(obs, self.parent).matches(obs, scope)
         if len(parents) != 1:
             return []
-        return self.child.matches(obs, parents[0])
+        child = _resolve(obs, self.child)
+        return [replace(box, input_point=child.point(box) if hasattr(child, "point") else box.center)
+                for box in child.matches(obs, parents[0])]
 
     def point(self, box):
-        return self.child.point(box) if hasattr(self.child, "point") else box.center
+        return box.input_point or box.center
 
 
 @dataclass(frozen=True)
@@ -384,7 +452,7 @@ class Absent:
     condition_only = True
 
     def matches(self, obs, scope=None):
-        return [] if self.target.matches(obs, scope) else [Box(0, 0, 1, 1)]
+        return [] if _resolve(obs, self.target).matches(obs, scope) else [Box(0, 0, 1, 1)]
 
 
 class AnyOf:
@@ -404,6 +472,7 @@ class AnyOf:
 
     def matches(self, obs, scope=None):
         for alternative in self.alternatives:
+            alternative = _resolve(obs, alternative)
             boxes = alternative.matches(obs, scope)
             if boxes:
                 if hasattr(alternative, "point"):
@@ -422,6 +491,7 @@ class Variants(AnyOf):
     def matches(self, obs, scope=None):
         kept = []
         for alternative in self.alternatives:
+            alternative = _resolve(obs, alternative)
             for box in alternative.matches(obs, scope):
                 point = alternative.point(box) if hasattr(alternative, "point") else box.center
                 box = replace(box, input_point=point)

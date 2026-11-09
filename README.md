@@ -18,6 +18,18 @@ Replace the package and PNGs with your app and its cropped controls. Run with
 to the script. SwifTest waits, finds a unique match, taps and checks `expect`.
 No catalog, profile, OCR or session setup is required for an image script.
 
+For games with entry screens, describe those buttons and the ready screen:
+
+```python
+open_app("com.example.game", through=["start.png", "enter.png"], expect="hud.png")
+```
+
+The runtime skips entry steps already passed, handles loading, and taps each
+remaining entry button at most once. No script polling loop is needed. Set an
+execution deadline with the runner's `--timeout` option. Geometry can describe
+the target directly, for example `Relative("teleport.png", below="waypoint.png")`.
+See [launch and geometry examples](docs/android-usage.md#launch-through-entry-screens).
+
 For a complete example with actual PNGs, see the
 [Genshin script and template gallery](examples/genshin/README.md).
 `Template(...)` adds options such as regions, scales and masks. Named catalogs,

@@ -1,6 +1,6 @@
 """Data-only Android tests. The same selectors and session policies power the Python API."""
 
-from .targets import Absent, AnyOf, Dialog, Node, Pixel, Position, Template, Text, Variants
+from .targets import Absent, AnyOf, Dialog, Node, Pixel, Position, Relative, Template, Text, Variants
 from .textmatch import TextPattern
 
 
@@ -39,6 +39,13 @@ def target(spec, lookup=None, base=None):
         return Dialog(
             target(opts["parent"], lookup, base), target(opts["child"], lookup, base)
         )
+    if name == "relative":
+        values = dict(opts)
+        child = target(values.pop("target"), lookup, base)
+        for key in ("above", "below", "left_of", "right_of", "near"):
+            if key in values:
+                values[key] = target(values[key], lookup, base)
+        return Relative(child, **values)
     raise ValueError("Unknown selector: " + name)
 
 
@@ -103,7 +110,19 @@ def execute(session, plan):
             label = step.pop("intent", label)
             if not isinstance(label, str) or not label.strip():
                 raise ValueError("An intent label must be a nonempty string.")
-            if "touch" in step and not set(step) - {
+            if "open" in step and not set(step) - {"open", "activity", "through", "expect", "timeout"}:
+                entries = step.get("through", [])
+                if not isinstance(entries, list) or (entries and "expect" not in step):
+                    raise ValueError("Launch entry targets need a list and an expected ready condition.")
+                opts = {"through": [select(v) for v in entries]}
+                if any(getattr(t, "condition_only", False) for t in opts["through"]):
+                    raise ValueError("Entry targets must identify controls.")
+                if "expect" in step:
+                    opts["expect"] = select(step["expect"])
+                if "timeout" in step:
+                    opts["timeout"] = session._timeout(step["timeout"])
+                call = (session.open, [step["open"], step.get("activity")], opts)
+            elif "touch" in step and not set(step) - {
                 "touch", "expect", "offset", "offset_unit", "required",
             }:
                 opts = {k: v for k, v in step.items() if k not in ("touch", "expect")}

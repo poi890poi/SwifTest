@@ -9,6 +9,7 @@ selection, named selectors, Python/JSON scripts, waiting and result reports.
 | Write and run scripts | [Usage guide](android-usage.md) |
 | Look up APIs, capture modes and package building | [API reference](swiftest.md) |
 | Understand contracts and limitations | [Requirements](android-requirements.md) |
+| Review original requirements, Airtest and current gaps | [Requirements review, November 9](requirements-review-2026-11-09.md) |
 | Start with an image script and real PNGs | [Genshin script and template gallery](../examples/genshin/README.md) |
 | Start a native-selector test project | [Starter files](../examples/starter/README.md) |
 | Run the instrumented game benchmark | [Genshin benchmark](android-genshin-benchmark-usage.md) |

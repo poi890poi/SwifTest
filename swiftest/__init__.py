@@ -2,7 +2,7 @@
 
 from .device import Android, DeviceError, devices
 from .session import Session, TargetNotFoundError, AmbiguousTargetError, current
-from .targets import Box, Position, Pixel, Template, Node, Text, Dialog, Absent, AnyOf, Variants
+from .targets import Box, Position, Pixel, Template, Node, Text, Dialog, Relative, Absent, AnyOf, Variants
 from .textmatch import TextPattern
 from .popups import PopupHandlingError
 from .ocr import LocalOCR
@@ -22,6 +22,7 @@ __all__ = [
     "Node",
     "Text",
     "Dialog",
+    "Relative",
     "Absent",
     "AnyOf",
     "Variants",
@@ -44,8 +45,8 @@ __all__ = [
 ]
 
 
-def open_app(package, activity=None):
-    return current().open(package, activity)
+def open_app(package, activity=None, **options):
+    return current().open(package, activity, **options)
 
 
 def touch(target, **options):

@@ -4,37 +4,36 @@
 shown below. It needs no `ui.json`, OCR engine, custom profile or benchmark runner.
 
 ```python
-from swiftest import Position, Template, open_app, touch, wait, wait_any, assert_exists
+from swiftest import Position, Template, open_app, touch
 
 
 def test_teleport():
-    open_app("com.miHoYo.GenshinImpact")
     ready = Template("assets/level.png", threshold=.8, region=(.36, .87, .45, .97))
-    prompts = {"start": Template("assets/entry.png", threshold=.75), "enter": "assets/door.png"}
-    while prompts:
-        state = wait_any({"ready": ready, **prompts}, timeout=240)["condition"]
-        if state == "ready":
-            break
-        touch(prompts.pop(state))
-    wait(ready, timeout=240)
-
+    open_app("com.miHoYo.GenshinImpact",
+             through=[Template("assets/entry.png", threshold=.75), "assets/door.png"],
+             expect=ready)
     touch(Position(.085, .145), expect="assets/map.png")
     touch(Position(.499, .498), expect="assets/waypoint_title.png")
-    touch("assets/teleport.png", expect=ready, timeout=90)
-    assert_exists(ready)
+    touch("assets/teleport.png", expect=ready)
 ```
 
-The first block handles either recorded startup prompt or an already running
-game. Each prompt is tapped at most once. The last four lines open the map,
-select the recorded waypoint, tap Teleport and check that the gameplay HUD returns.
+The script contains four game operations and one reusable ready-screen selector.
+`through` lists entry buttons in progression order. The runtime recognizes the
+current screen, skips earlier entry steps, and taps each remaining button at most
+once. It accepts an already-ready game immediately. The three touches open the
+map, select the waypoint and teleport, with their expected results.
+There are no script sleeps, polling loops, state branches or retry counters.
 The runner owns capture, matching, polling, input checks and reports.
 
 ## Run
 
 ```text
 python -m pip install .
-swiftest run examples/genshin/test_teleport.py --serial YOUR_DEVICE_SERIAL
+swiftest run examples/genshin/test_teleport.py --serial YOUR_DEVICE_SERIAL --timeout 240
 ```
+
+The runner timeout is an execution limit; it is not a fixed delay. Choose it for
+your test environment without adding waits to the game script.
 
 This example records **Traditional Chinese at 2400 × 1080 in landscape**.
 The game must already be signed in, with downloads complete and the recorded
@@ -80,7 +79,15 @@ PNGs, exercising both startup prompts, entry midway through startup and an
 already running game. They verify input order, no repeated startup/teleport tap,
 loading followed by HUD return, and no OCR or hierarchy reads.
 
-The script also passed replay against all four November 7 Airtest recording
+On November 9, the simplified script also passed two live checks on the previously
+used Samsung SM-G781B: entry-to-gameplay issued five taps, and an already-running
+game issued three. Both verified the returning HUD, with zero OCR and hierarchy
+reads; the first arrival screenshot was visually checked. The tests used explicit
+PNG capture and a 120-second runner deadline. They verify this layout's behavior,
+not a latency or energy improvement. The phone was returned to its prior Settings
+screen. Raw reports and captures remain in ignored local storage.
+
+The earlier version of this example passed replay against all four November 7 Airtest recording
 sequences (`01`, `04`, `06`, `07`), with five inputs each. These are recorded-screen
 checks, not new device runs. Initial use of 0.90 everywhere missed the Start Game
 prompt in three sequences and the level marker in two. Restoring those two

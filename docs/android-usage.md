@@ -39,31 +39,80 @@ and its actual PNGs. AirtestIDE displays templates inline in its editor; SwifTes
 currently shows them in the repository's example gallery, not in a visual recorder.
 The catalog-based workflow below is optional and useful when sharing selectors.
 
+## Launch through entry screens
+
+Describe the entry buttons and the screen that means the game is ready:
+
+```python
+from swiftest import open_app, touch
+
+open_app("com.example.game", through=["start.png", "enter.png"], expect="hud.png")
+touch("map_button.png", expect="map.png")
+```
+
+`through` lists possible entry buttons in progression order. A later visible
+button skips earlier ones; an already-visible ready screen skips all entry
+buttons. Each entry button is tapped at most once. Repeated frames, loading time
+and absent intermediate screens do not require script loops. Multiple possible
+entry controls withhold input until the ambiguity clears or the operation times
+out. Known registered interruptions use the existing bounded pop-up handling.
+
+Use `--timeout 240` on the runner when a game needs a longer execution allowance.
+It is a deadline, not a sleep. `open_app(package)` still only launches the process;
+`expect` requests verified readiness. Missing readiness fails the launch operation.
+`through` requires `expect`, and does not imply permission to dismiss unknown
+screens or repeat a dispatched input. Ordinary mandatory buttons can remain
+separate `touch` operations.
+
+The equivalent JSON step is:
+
+```json
+{"steps":[{"open":"com.example.game","through":["start.png","enter.png"],"expect":"hud.png"}]}
+```
+
+## Describe geometry directly
+
+```python
+from swiftest import Dialog, Position, Relative, Variants, touch
+
+touch(Relative("teleport.png", below="waypoint_title.png"), expect="hud.png")
+touch(Dialog("dialog.png", Position(.95, .05)), expect="hud.png")
+touch(Variants("confirm_light.png", "confirm_dark.png"), expect="hud.png")
+```
+
+`Relative` accepts `above`, `below`, `left_of`, `right_of` and `near`. Supplied
+relations must all hold. Directional relations require non-overlapping bounds;
+`near` uses center distance in normalized screen coordinates, with `distance=.1`
+by default. Inside a dialog, distance uses that dialog's coordinate space.
+Every anchor must be unique, and multiple remaining target matches withhold input.
+All targets and anchors use the same observation and are reacquired after changes.
+
+Use `Template(..., region=..., size=..., scale_range=..., mask=...)` when those
+facts describe the control. Relaxed image thresholds do not relax geometry.
+Image filenames also work inside `Dialog`, `Variants`, `AnyOf` and `Absent`;
+these selectors need no catalog. JSON uses, for example,
+`{"relative":{"target":"teleport.png","below":"waypoint_title.png"}}`.
+
 ## 1. Install and select a device
 
 Install Python and Android SDK Platform Tools, enable USB debugging on your phone
 and authorize the computer. The package declares Python ≥3.9; this workspace was
-tested with Python 3.12.10. From the source checkout in PowerShell:
+tested with Python 3.12.10. Use your selected Python environment from the source checkout:
 
-```powershell
-# Create this environment only if it does not already exist.
-py -3.12 -m venv .venv/swiftest
-$swiftestPython = Join-Path (Get-Location) '.venv/swiftest/Scripts/python.exe'
-& $swiftestPython -m pip install -e .
-adb devices
-& $swiftestPython -m swiftest devices
-$phoneSerial = 'YOUR_DEVICE_SERIAL'
+```text
+python -m pip install -e .
+python -m swiftest devices
 ```
 
-Replace `YOUR_DEVICE_SERIAL` with the authorized device's serial. If the Python
-launcher is unavailable, use your interpreter's full path to create the environment.
-Keep `$swiftestPython` pointed at that environment in later commands. Native selectors
+Replace `YOUR_DEVICE_SERIAL` with the authorized device's serial. Use the same
+Python interpreter for installation and execution; an interpreter's full path can
+replace `python` in these commands. Native selectors
 need no OCR extra. Add one only if your tests read rendered text:
 
-```powershell
-& $swiftestPython -m pip install -e '.[ocr]'
+```text
+python -m pip install -e ".[ocr]"
 # Alternatively, for the supported OpenVINO CPU adapter:
-& $swiftestPython -m pip install -e '.[ocr-fast]'
+python -m pip install -e ".[ocr-fast]"
 ```
 
 The optional JPEG helper needs Java/Javac and an Android SDK platform plus D8.
@@ -74,8 +123,8 @@ PNG explicitly. Other extras are `scrcpy` for supported streaming capture and
 
 Check which source is imported with:
 
-```powershell
-& $swiftestPython -c "import swiftest; print(swiftest.__file__)"
+```text
+python -c "import swiftest; print(swiftest.__file__)"
 ```
 
 ## 2. Create a test project and identify its controls
@@ -93,15 +142,15 @@ my-tests/
 Copy it to a new directory, then replace its placeholder app package and resource
 IDs with your app's values. The starter is not an installed demonstration app.
 
-```powershell
-Copy-Item -LiteralPath examples/starter -Destination my-tests -Recurse
+```text
+python -c "import shutil; shutil.copytree('examples/starter', 'my-tests')"
 ```
 
 Open your app on the phone and inspect the current screen:
 
-```powershell
-& $swiftestPython -m swiftest hierarchy artifacts/inspection/ui.xml --serial $phoneSerial
-& $swiftestPython -m swiftest snapshot artifacts/inspection/screen.png --serial $phoneSerial
+```text
+python -m swiftest hierarchy artifacts/inspection/ui.xml --serial YOUR_DEVICE_SERIAL
+python -m swiftest snapshot artifacts/inspection/screen.png --serial YOUR_DEVICE_SERIAL
 ```
 
 Use `resource-id`, `text`, `content-desc` and bounds from the XML to define native
@@ -142,8 +191,8 @@ waits for one matching control, taps it once and waits for the details title. It
 then returns and checks the original control. You write the outcome; you do not
 need a fixed sleep between these actions.
 
-```powershell
-& $swiftestPython -m swiftest run my-tests/test_navigation.py --serial $phoneSerial --timeout 12 --output artifacts/my-app-tests --failure-screenshot
+```text
+python -m swiftest run my-tests/test_navigation.py --serial YOUR_DEVICE_SERIAL --timeout 12 --output artifacts/my-app-tests --failure-screenshot
 ```
 
 The CLI creates and closes the session. Test functions accept either no arguments
@@ -188,14 +237,14 @@ Create `my-tests/test_navigation.json` alongside the same catalog:
 }
 ```
 
-```powershell
-& $swiftestPython -m swiftest run my-tests/test_navigation.json --serial $phoneSerial --output artifacts/my-app-tests --failure-screenshot
+```text
+python -m swiftest run my-tests/test_navigation.json --serial YOUR_DEVICE_SERIAL --output artifacts/my-app-tests --failure-screenshot
 ```
 
 JSON and Python use the same selectors and session policies. Standard JSON supports
-`touch`, `assert`, `assert_absent`, `wait_any`, `swipe`, `key` and `text`; selectors can be inline
-instead of named. Use Python for branching, loops, custom logic or advanced retry
-options. The ordinary schema is `app` + `steps`; a game's custom `open`/`touch`
+`open`, `touch`, `assert`, `assert_absent`, `wait_any`, `swipe`, `key` and `text`;
+selectors can be inline instead of named. Ordinary operation scripts do not need
+polling or retry loops. Python remains available for test-specific business logic. The ordinary schema is `app` + `steps`; a game's custom `open`/`touch`
 schema requires its explicit profile and is not the framework's standard format.
 
 ## 5. Choose the right selector
@@ -225,8 +274,8 @@ parent; do not solve ambiguity by blindly lowering a threshold.
 
 Capture a template from a known current screen with pixel crop coordinates:
 
-```powershell
-& $swiftestPython -m swiftest snapshot my-tests/assets/save.png --crop 100 200 160 60 --serial $phoneSerial
+```text
+python -m swiftest snapshot my-tests/assets/save.png --crop 100 200 160 60 --serial YOUR_DEVICE_SERIAL
 ```
 
 Those crop numbers are illustrative; use the bounds from your screenshot. Python
@@ -299,9 +348,8 @@ applies. JSON supports `{"wait_any":{"ready":"home","error":"connection_error"}}
 
 ## 7. Run suites and read results
 
-```powershell
-& $swiftestPython -m swiftest run my-tests --serial $phoneSerial --output artifacts/my-app-tests --failure-screenshot
-$LASTEXITCODE
+```text
+python -m swiftest run my-tests --serial YOUR_DEVICE_SERIAL --output artifacts/my-app-tests --failure-screenshot
 ```
 
 Directory runs discover `test_*.py` and `test_*.json` recursively in sorted order.
@@ -351,7 +399,7 @@ intent and last result as well as writing JSON. A process kill cannot produce a
 final report.
 
 The `confirmation` field distinguishes `dispatch` (input sent), `observation`
-(query completed), `postcondition` (touch result verified), and `checkpoint`
+(query completed), `postcondition` (touch result or launch readiness verified), and `checkpoint`
 (script-supplied result). An optional lookup returning `False` is a completed query,
 not proof of the desired screen. Use assertions or an explicit postcondition when
 that outcome is required. Automatic text-entry details omit the typed payload;
@@ -363,11 +411,16 @@ JSON steps accept the same readable labels:
 {"steps":[{"intent":"Claim daily reward","touch":"claim","expect":"reward_received"}]}
 ```
 
-You can inspect the newest report in PowerShell:
+Open the report path printed by the CLI, or inspect the newest report with Python:
 
-```powershell
-$reportFile = Get-ChildItem artifacts/my-app-tests -Filter report.json -Recurse | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-Get-Content $reportFile.FullName -Raw | ConvertFrom-Json | Select-Object file,status,elapsed_s,error
+```python
+import json
+from pathlib import Path
+
+report = max(Path("artifacts/my-app-tests").rglob("report.json"),
+             key=lambda path: path.stat().st_mtime)
+for result in json.loads(report.read_text(encoding="utf-8")):
+    print(result["file"], result["status"], result.get("error"))
 ```
 
 ## 8. Embed the library in your own runner

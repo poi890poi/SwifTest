@@ -40,7 +40,7 @@ def tracked(method):
             result = method(self, *args, **kwargs)
             self._intent_result = json_value(result)
             self._intent_confirmation = (
-                "postcondition" if method.__name__ == "touch" and kwargs.get("expect") is not None
+                "postcondition" if method.__name__ in ("touch", "open") and kwargs.get("expect") is not None
                 and result is not False else
                 "dispatch" if method.__name__ in ("touch", "swipe", "key", "text", "open")
                 and result is not False else "observation"

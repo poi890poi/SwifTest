@@ -48,7 +48,14 @@ waypoint and is not automatically equivalent to that benchmark.
 
 ## Timing requirements
 
-**The primary optimization metric is complete cold-process E2E time.** Every table
+**Product priority correction, November 9:** the user explicitly prioritizes
+latency introduced by the automation, excluding game startup/loading. Measure
+actionable-UI-to-input and result-to-confirmation delay separately from the game's
+own work. The cold-process protocol below is retained for historical reproduction;
+it does not define the product's responsiveness requirement. See the
+[requirements review](requirements-review-2026-11-09.md).
+
+**The historical cold-process study's primary metric is complete E2E time.** Every table
 or speed claim must name its start/end boundaries and whether initialization is
 included.
 

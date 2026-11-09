@@ -3,6 +3,10 @@
 SwifTest is a reusable Python library and CLI for testing Android
 applications. A test describes the intended actions and results; the framework
 owns device access, observations, target lookup, waiting, guarded input and reports.
+Ordinary scripts contain game operations and UI facts, including geometry and
+expected results. They must not require manual polling/retry loops or a separate
+app-specific procedural setup. See the [requirements review](requirements-review-2026-11-09.md)
+for the original requirements, later corrections and current implementation gaps.
 An application profile is optional. The framework must work without Genshin,
 AriaTrace's PC components, private screenshots or benchmark scripts.
 
@@ -15,8 +19,8 @@ Start with the [framework usage guide](android-usage.md) and
 | Owner | Responsibilities |
 | --- | --- |
 | Framework: `swiftest/` | Device/session lifecycle, lazy native/pixel/text observations, reusable selectors, ambiguity checks, waits, input policy, declarative execution, suite discovery, reports and conversion tools |
-| Test project | Application package, logical UI names, resource IDs, text aliases, templates, expected results, known pop-ups and app-specific recovery rules |
-| Optional profile | App-specific state recognition or a custom intent language through `run_intent(session, path)`; reuse the supplied session |
+| Test project | Application package, game operations, target images/text/positions and relations, expected results, variants and permitted interactions; catalogs are optional |
+| Optional profile | Existing extension through `run_intent(session, path)`; not a requirement or a substitute for simple ordinary scripts |
 | Benchmarks: `benchmarks/android/` | Frozen experiments, device/environment configuration, independent outcome checks and performance analysis |
 
 Do not move game labels, waypoint coordinates, a particular phone serial or a
@@ -28,7 +32,7 @@ support that move.
 
 1. Install the standalone package, select an authorized Android device and inspect
    its native hierarchy or screenshot.
-2. Create a test project with named controls in a shared catalog. Keep test intent
+2. Create a test project with direct targets or an optional shared catalog. Keep test intent
    stable when labels, languages, appearance or layout variants change.
 3. Write Python tests, ordinary JSON action plans, or embed `Session` in another
    Python runner. Run a file or a directory of tests without an app-specific profile.
@@ -42,6 +46,9 @@ support that move.
 ## Functional requirements and verification
 
 These are framework contracts, not a claim of exhaustive device compatibility.
+The ordinary Genshin example now declares four game operations and its targets;
+the runtime owns entry-screen progression. Broader speed, energy and authoring
+tool requirements still need their own evidence.
 
 | ID | Required behavior | Verification |
 | --- | --- | --- |
@@ -64,6 +71,8 @@ These are framework contracts, not a claim of exhaustive device compatibility.
 | FR-17 | Reuse template/OCR results only on fresh, exactly equal region pixels and matching configuration. Bound retained pixels; preserve ambiguity and capture failures. | Exact-repeat, movement, duplicate, configuration and capture-failure tests |
 | FR-18 | Evaluate named alternative conditions on one observation. Use frame notifications for streaming pixel waits and a bounded polling sleep otherwise. | Shared-frame and deterministic waiting tests |
 | FR-19 | Record success or the last completed result/checkpoint and failed intent. Preserve per-case results and input-versus-postcondition confirmation. | Named Python/JSON failures, partial checkpoints, case isolation and runner report tests |
+| FR-20 | Launch through declared ordered entry targets until an expected ready condition, skipping earlier entries already passed. Share each observation; dispatch each entry at most once; reject ambiguous choices and report readiness failure. | Cold/mid-entry/already-ready, delayed, interrupted, ambiguous, missing-result and lost-acknowledgement operation tests |
+| FR-21 | Constrain controls by spatial relations to unique anchors. Preserve original template constraints, scoped coordinates, click anchors and ambiguity. Permit image filenames in composite selectors. | Moved-anchor/dialog, wrong-side/distance, duplicate-anchor/target and Python/JSON geometry tests |
 
 ## Supported interfaces and present limits
 

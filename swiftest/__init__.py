@@ -35,6 +35,8 @@ __all__ = [
     "exists",
     "wait",
     "wait_any",
+    "screen_signature",
+    "wait_screen_change",
     "intent",
     "checkpoint",
     "assert_exists",
@@ -67,6 +69,14 @@ def wait(target, **options):
 
 def wait_any(conditions, **options):
     return current().wait_any(conditions, **options)
+
+
+def screen_signature(**options):
+    return current().screen_signature(**options)
+
+
+def wait_screen_change(previous=None, **options):
+    return current().wait_screen_change(previous, **options)
 
 
 def intent(name, **details):

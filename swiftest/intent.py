@@ -2,6 +2,7 @@
 
 from .targets import Absent, AnyOf, Dialog, Node, Pixel, Position, Relative, Template, Text, Variants
 from .textmatch import TextPattern
+from .screen import validate_change_options
 
 
 def target(spec, lookup=None, base=None):
@@ -134,6 +135,11 @@ def execute(session, plan):
                 if op in ("assert", "assert_absent"):
                     method = session.assert_exists if op == "assert" else session.assert_not_exists
                     call = (method, [select(value)], {})
+                elif op == "wait_screen_change" and isinstance(value, dict):
+                    opts = dict(value)
+                    timeout = session._timeout(opts.pop("timeout")) if "timeout" in opts else None
+                    validate_change_options(**opts)
+                    call = (session.wait_screen_change, [], dict(opts, timeout=timeout))
                 elif op == "wait_any" and isinstance(value, dict) and value:
                     if any(not isinstance(k, str) or not k for k in value):
                         raise ValueError("Condition names must be nonempty strings.")

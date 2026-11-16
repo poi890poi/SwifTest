@@ -298,6 +298,53 @@ inside the region can eliminate the benefit.
 
 ## 6. Handle waiting, pop-ups and failures explicitly
 
+### Wait for the old screen to disappear
+
+When a loading screen is visible, `wait_screen_change(timeout=30)` captures its
+signature and returns once a sustained visual departure is visible. It works
+without a named target on the destination screen. If an action can switch
+screens immediately, capture the reference **before** issuing that action.
+
+```python
+from swiftest import screen_signature, touch, wait_screen_change
+
+before = screen_signature(samples=3)
+touch("start.png")
+result = wait_screen_change(before, timeout=30)
+```
+
+The signature stores average colors for a 48 × 32 grid covering the display.
+By default, at least 35% of the reference cells must differ by 24 or more on
+one color channel. The change must appear on at least two captures and persist
+for 0.2 seconds. Every capture is compared with the original reference, so a
+slow fade can accumulate. A spinner, timer or progress bar typically affects
+too little area to qualify.
+
+The default reference uses one capture. Use `samples=3` or more while the old
+screen is still visible to exclude cells that animate during sampling. A
+reference with less than 25% stable coverage raises an error. A display size
+change requires a new reference. Set `min_fraction` to the expected proportion
+of stable cells that must change and `persist` to the required duration in
+seconds. The result contains `changed_fraction` and `duration_s`. An unmet
+condition raises `TargetNotFoundError` and appears in the failed-intent report.
+
+A full-screen cinematic, lasting overlay or camera pan can qualify on the same
+game page. Two visually similar pages can fall below the threshold. For an
+action that requires gameplay readiness, verify its own target before input.
+Use the following JSON step when the loading screen is already visible.
+
+```json
+{"intent":"Leave loading screen","wait_screen_change":{"timeout":30}}
+```
+
+In a replay of four stored Genshin loading sequences (2400 × 1080), signature
+construction for each new image and comparison took 2.27 ms median and 2.53 ms
+at the 95th percentile across 132 evaluations. Capture and decode time are
+additional. All four final gameplay images exceeded the default area threshold.
+Two recordings ended at the first qualifying image, before a second could
+confirm departure. A sparse sampling variant falsely classified a moving stripe
+pattern as 100% changed. The area-average implementation scored that pattern 0%.
+
 ```python
 from swiftest import Node, TextPattern
 

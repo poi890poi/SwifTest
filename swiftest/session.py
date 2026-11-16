@@ -15,6 +15,7 @@ from .targets import Absent, AnyOf, Box, Dialog, Pixel, Position, Relative, Temp
 from .popups import PopupRule, handle_popup
 from .evaluation import VisualCache
 from .outcome import Outcomes, tracked
+from .screen import ScreenSignature, validate_change_options
 
 
 class TargetNotFoundError(AssertionError):
@@ -453,6 +454,52 @@ class Session(Outcomes):
     def assert_not_exists(self, target, timeout=None):
         self.wait(Absent(self.resolve(target)), timeout)
         return True
+
+    @tracked
+    def wait_screen_change(self, previous=None, *, timeout=None, min_fraction=0.35, persist=0.2):
+        """Wait until enough of the reference screen differs across fresh captures."""
+        validate_change_options(min_fraction, persist)
+        deadline = self._deadline(timeout)
+        if previous is None:
+            previous = self.screen_signature()
+        if not isinstance(previous, ScreenSignature):
+            raise TypeError("previous must be a reference from screen_signature().")
+        since = None
+        peak = 0.0
+        while True:
+            obs = Observation(self)
+            fraction = previous.changed_fraction(obs.image)
+            now = time.monotonic()
+            peak = max(peak, fraction)
+            if now > deadline:
+                break
+            if fraction < min_fraction:
+                since = None
+            elif since is None:
+                since = now
+            elif now - since >= persist:
+                return {"changed_fraction": fraction, "duration_s": now - since}
+            self._pause(deadline, obs)
+            if time.monotonic() >= deadline:
+                break
+        raise TargetNotFoundError(
+            f"Screen did not sustain a change of {min_fraction:.0%} for {persist:g}s "
+            f"before timeout (peak {peak:.0%})."
+        )
+
+    def screen_signature(self, *, samples=1):
+        """Sample the old screen before an action. Additional samples identify animation."""
+        if type(samples) is not int or samples < 1:
+            raise ValueError("samples must be a positive integer.")
+
+        def frames():
+            for index in range(samples):
+                obs = Observation(self)
+                yield obs.image
+                if index + 1 < samples:
+                    self._pause(time.monotonic() + self.poll_interval, obs)
+
+        return ScreenSignature.capture(frames())
 
     @tracked
     def wait_any(self, conditions, timeout=None):

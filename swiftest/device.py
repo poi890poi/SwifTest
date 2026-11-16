@@ -124,11 +124,17 @@ class Android:
             raise DeviceError("Focus changed before input to " + self.package)
 
     def display_size(self):
-        line = self.run(
-            "shell", 'dumpsys input | grep "Viewport INTERNAL" | head -1'
-        ).decode()
-        match = re.search(r"logicalFrame=\[0, 0, (\d+), (\d+)\]", line)
-        return tuple(map(int, match.groups())) if match else None
+        lines = self.run("shell", "dumpsys input | sed -n '/Viewport INTERNAL/p'").decode().splitlines()
+        for line in lines:
+            display = re.search(r"\bdisplayId=(-?\d+)", line)
+            if (display and display.group(1) != "0") or "isActive=[0]" in line:
+                continue
+            match = re.search(r"logicalFrame=\[0, 0, (\d+), (\d+)\]", line)
+            if match:
+                return tuple(map(int, match.groups()))
+        if lines:
+            raise DeviceError("Cannot verify the active internal display dimensions.")
+        return None
 
     def tap(self, x, y, duration=0):
         self.check_focus()

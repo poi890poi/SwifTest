@@ -266,16 +266,7 @@ its current online API differs from the installed 1.4.4 implementation.
 
 ## Reproduction and evidence
 
-Run with this workspace's `.venv/androidtestkit/Scripts/python.exe`:
-
-```text
-benchmarks/android/latency_postmortem_probe.py --serial RFCR91GWXLX --output artifacts/android-latency-postmortem/NEW
-benchmarks/android/latency_postmortem_analysis.py artifacts/android-latency-postmortem/NEW
-benchmarks/android/latency_roi_replay.py artifacts/android-latency-postmortem/NEW
-```
-
-The first command sends the established game-entry/teleport actions. The other two
-are offline. Raw evidence remains ignored under
+The retained analysis and ROI replay tools operate on saved frames. Raw evidence remains ignored under
 `artifacts/android-latency-postmortem/diagnostic/`: source hashes, complete status,
 per-task results, lossless intermediate images, contact sheets, `analysis.json`
 and `roi-replay.json`. Earlier timing decomposition is in the sibling

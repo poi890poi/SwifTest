@@ -18,5 +18,4 @@ jobs:
       - run: python -c "import pathlib, subprocess, sys; subprocess.check_call([sys.executable, '-m', 'pip', 'install', str(next(pathlib.Path('dist').glob('swiftest-*.whl')))])"
       - run: python -I -m swiftest --help
       - run: swiftest --help
-      - run: python -m unittest discover -s tests -p "test_swiftest*.py"
-      - run: python -m unittest discover -s tests -p "test_genshin*.py"
+      - run: python -m unittest discover -s tests

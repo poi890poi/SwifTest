@@ -2,7 +2,7 @@
 
 This starter uses native Android selectors and therefore contains no template
 images. For an image-based script with included PNGs, use the
-[Genshin example](../genshin/README.md). A catalog is optional for ordinary scripts.
+[loading-screen fixture](../../docs/airtestide.md). A catalog is optional for ordinary scripts.
 
 Copy this directory to start tests for your own Android app. This is a template,
 not an installed sample application. Replace `com.example.app` in both test files

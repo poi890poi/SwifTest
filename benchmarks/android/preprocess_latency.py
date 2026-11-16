@@ -13,7 +13,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from steady_latency import summary
-from examples.genshin.profile import brightness_percentile as histogram_level
+from benchmarks.android.frame_analysis import brightness_percentile as histogram_level
 
 
 def prepare(image, level):
@@ -50,7 +50,7 @@ def main():
               for method in ("percentile", "histogram")}
     (args.output/"result.json").write_text(json.dumps(dict(inputs=inputs, rows=rows, summary=result,
         hashes={str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-                for p in [Path(__file__), ROOT/"examples/genshin/profile.py"]}), indent=2))
+                for p in [Path(__file__), ROOT/"benchmarks/android/frame_analysis.py"]}), indent=2))
     print(json.dumps(result, indent=2))
 
 

@@ -1,8 +1,28 @@
 # Edit SwifTest image scripts in AirtestIDE
 
-Open the [Level.air example](../examples/airtestide/Level.air/Level.py) as an
-`.air` project in AirtestIDE. Its entry point is `Level.air/Level.py`. The
-adjacent `level.png` is the level-label crop from the Genshin example.
+The [Loading.air example](../examples/airtestide/Loading.air/Loading.py) runs
+against the local SwifTest Android fixture. The fixture displays the exact
+40 × 36 pixel PNG shown here. Tap the symbol to finish loading after a short
+delay. A small spinner animates while the surrounding screen stays stable.
+
+![SwifTest fixture start button](../examples/airtestide/Loading.air/start.png)
+
+From the repository root, build and install the fixture on your test device.
+Use the same device serial for installation and execution.
+
+```text
+python tests/android_variants_fixture/build.py --sdk PATH_TO_ANDROID_SDK
+adb -s SERIAL install -r artifacts/androidtestkit/variants-fixture/fixture.apk
+python -m swiftest run examples/airtestide/Loading.air --serial SERIAL
+```
+
+The script launches the fixture, samples the old screen, taps the symbol and
+waits for the background to change. The runner reports the outcome without
+needing a template for the destination.
+
+Install AirtestIDE separately from NetEase and open `Loading.air` to edit
+the script. [AirtestIDE download and terms](https://airtest.netease.com/download.html)
+
 AirtestIDE represents a captured image as a literal `Template(...)` expression
 and provides an image/code toggle and a picture editor. [Airtest image scripts](https://airtest.doc.io.netease.com/en/IDEdocs/airtest_framework/3_airtest_image/)
 
@@ -37,3 +57,5 @@ AirtestIDE's Play button uses its configured runner. The workflow verified here
 is editing the literal in a standard project layout and executing the saved
 file with the SwifTest CLI. For scripts that retain `from airtest.core.api
 import *`, use `swiftest convert` to produce a separate SwifTest project.
+
+Conversion copies referenced images or project assets. Review their redistribution rights before sharing a converted project.

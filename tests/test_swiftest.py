@@ -255,18 +255,26 @@ class FrameworkTests(unittest.TestCase):
                 compat.wait(template, timeout=0)
 
     def test_editable_air_project_runs_with_native_unique_match_policy(self):
-        bundle = Path(__file__).resolve().parents[1] / 'examples/airtestide/Level.air'
+        bundle = Path(__file__).resolve().parents[1] / 'examples/airtestide/Loading.air'
         entry, = suite(bundle)
         self.session.base = bundle
-        tile = cv2.imread(str(bundle / 'level.png'))
+        tile = cv2.imread(str(bundle / 'start.png'))
         h, w = tile.shape[:2]
         self.screen[12:12+h, 30:30+w] = tile
         with self.session:
-            case, = run_script(entry, self.session)
-            self.assertEqual(case['status'], 'passed')
-            self.assertEqual(case['outcome']['last_valid_result']['result'],
-                             [30 + w//2, 12 + h//2])
             self.screen[70:70+h, 30:30+w] = tile
             with self.assertRaises(AmbiguousTargetError):
                 run_script(entry, self.session)
-        self.assertEqual(self.device.taps, [])
+            self.assertEqual(self.device.taps, [])
+            self.screen[70:70+h, 30:30+w] = 0
+            tap = self.device.tap
+
+            def advance(x, y, duration=0):
+                tap(x, y, duration)
+                self.screen[:] = 200
+
+            self.device.tap = advance
+            case, = run_script(entry, self.session)
+            self.assertEqual(case['status'], 'passed')
+            self.assertEqual(self.device.package, 'org.swiftest.variantsfixture')
+            self.assertEqual(self.device.taps, [(30 + w//2, 12 + h//2)])

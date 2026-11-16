@@ -88,9 +88,7 @@ def report(root):
              "The first Airtest development run timed out because the second entry prompt was missing; this was corrected "
              "before holdout. Development runs are retained separately and excluded from the measured table.", "",
              "## Reproduce and inspect", "",
-             "See [protocol and commands](../benchmarks/android/README.md). "
-             "The scripts are [Airtest](../examples/genshin/airtest_teleport.py) and "
-             "[TestKit adapter](../benchmarks/android/testkit_teleport.py).", "",
+             "These historical timings measured the separately installed Airtest Python library.", "",
              f"Raw local evidence: `{root.relative_to(Path.cwd()).as_posix()}/`. "
              "`metadata.json` records code/assets hashes, environment packages and settings; per-trial directories "
              "contain temperature samples, logs, state captures and independent ADB arrival screenshots. "

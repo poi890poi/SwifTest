@@ -34,9 +34,8 @@ for rendered text and `Node(...)` for native attributes. A registered catalog na
 takes precedence over a filename, so existing names such as `save.png` keep their
 meaning. Unknown names without an image suffix remain errors.
 
-The [Genshin example](../examples/genshin/README.md) includes a complete script
-and its actual PNGs. AirtestIDE displays templates inline in its editor; SwifTest
-currently shows them in the repository's example gallery, not in a visual recorder.
+The [loading-screen example](airtestide.md) includes a runnable image script,
+a matching Android fixture and its original template.
 The catalog-based workflow below is optional and useful when sharing selectors.
 
 ## Launch through entry screens
@@ -524,7 +523,4 @@ app running unless you explicitly call `session.stop(package)`.
 For a device-specific runnable example, see the existing
 [Samsung Settings test](../examples/settings/test_connections.py). For advanced
 selectors, catalog busy/pop-up syntax and capture options, use the
-[API reference](swiftest.md). The
-[Genshin benchmark supplement](android-genshin-benchmark-usage.md) documents one
-application experiment; its timings and private assets are not framework setup
-requirements.
+[API reference](swiftest.md).

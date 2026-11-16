@@ -46,9 +46,7 @@ support that move.
 ## Functional requirements and verification
 
 These are framework contracts, not a claim of exhaustive device compatibility.
-The ordinary Genshin example now declares four game operations and its targets;
-the runtime owns entry-screen progression. Broader speed, energy and authoring
-tool requirements still need their own evidence.
+The [loading-screen fixture](airtestide.md) exercises template input and screen departure.
 
 | ID | Required behavior | Verification |
 | --- | --- | --- |
@@ -156,7 +154,6 @@ improve a timing number. Keep application-specific evidence clearly scoped.
 The recent 51–54-second results and provisional 47–49-second favorable-run model
 belong to one Genshin cold-start benchmark. They are neither generic framework
 requirements nor measured theoretical limits. See the
-[benchmark requirements](android-genshin-benchmark-requirements.md) and
 [results](android-cold-start-followup-2026-11-07.md) only when evaluating that task.
 
 Keep generated datasets, raw images, telemetry, caches and copied dependencies

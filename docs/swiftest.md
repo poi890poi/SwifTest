@@ -3,7 +3,7 @@
 SwifTest is an installable Python library and command-line runner for testing Android apps and games. Tests specify what to open, touch, or verify. The library owns device selection, capture, lookup, waiting, retries and failure reporting. App-specific screen recognition belongs in the test project.
 
 Start with the [framework usage guide](android-usage.md) and
-[image script with shipped templates](../examples/genshin/README.md). The
+[image script and Android fixture](airtestide.md). The
 [requirements](android-requirements.md) define framework ownership, supported
 workflows, correctness, extension boundaries and performance acceptance. This page
 provides the detailed API and historical validation reference.
@@ -295,15 +295,6 @@ geometry checks still use that image. A smaller OCR input can miss small text,
 so validate languages, button labels and pop-ups before choosing this setting.
 No image-size limit is enabled by default. Native-only tests still do not load OCR.
 
-The Genshin profile uses separate cooldowns for its recognized launch and entry
-screens, so the second prompt need not wait for the first prompt's retry timer.
-Each logical screen keeps its 15-second retry interval and the overall three-tap
-limit. Interactive polling waits at most 0.10 seconds between observations;
-identified downloads and preparation retain adaptive waits. Recognition, capture
-and input costs are additional to this wait. This is not a 0.10-second response
-guarantee. See the [speed investigation](android-speed-2026-11-07.md) for measured
-results and the distinction between task time and operator reaction time.
-
 | Mode | Requirements and tradeoffs |
 |---|---|
 | `auto` | On-demand, full-resolution JPEG with exact identical-frame suppression. Android 13 with one physical display tries direct acquisition and native bitmap comparison; unsupported devices use `screencap`. If the helper cannot build or run, the session uses a fresh ADB PNG and records the reason. |
@@ -313,13 +304,7 @@ results and the distinction between task time and operator reaction time.
 
 The optional JPEG helper is built with Java and D8 invoked from Python. It runs temporarily under the ADB shell on the device. The Python host invokes executables directly. Native selector tests avoid starting a capture backend unless they need pixels. Reports distinguish screenshot/stream payload bytes, setup bytes, screenshot requests, OCR calls, and native hierarchy reads. Byte and time measurements do not measure energy in joules.
 
-`capture_acquisition` identifies the actual acquisition path. The Genshin profile
-batches fresh geometry, overlay and focus checks beside each tap. Extra Session
-popup/busy rules retain the shared lookup path. An uncertain input is never
-replayed. Evidence PNG writes overlap game transitions and finish before the
-task returns, including failure paths. See the
-[warm E2E investigation](android-e2e-latency-2026-11-07.md) for device results and
-the tested limits. These source changes are newer than the installed 0.4.0 wheel.
+`capture_acquisition` identifies the actual acquisition path.
 
 ```text
 python -m swiftest hierarchy ui.xml --serial SERIAL
@@ -340,7 +325,7 @@ The independent compatibility module covers Android connection/setup, `Template`
 
 ## Examples and evidence
 
-The Settings tests use only the public API. The Genshin teleport workflow is an example with its own screen-recognition profile and intent. Use the same CLI with an explicit trusted profile file exposing `run_intent(session, path)`. See the Genshin prototype note for the earlier device measurements. The framework runtime has no dependency on that example, AriaTrace's rig packages or the repository's tool cache.
+The Settings tests use the public API. To supply custom screen recognition, pass a trusted profile implementing `run_intent(session, path)` to the CLI with `--profile`.
 
 Public behavior references: [Airtest Android API](https://airtest.readthedocs.io/en/latest/all_module/airtest.core.api.html), [scrcpy stream protocol](https://github.com/Genymobile/scrcpy/blob/master/doc/develop.md), [RapidOCR](https://github.com/RapidAI/RapidOCR).
 

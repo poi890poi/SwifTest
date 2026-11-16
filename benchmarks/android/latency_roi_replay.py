@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
     import cv2
     from swiftest import LocalOCR
-    from examples.genshin.profile import has_world_hud, ocr_image
+    from benchmarks.android.frame_analysis import has_world_hud, ocr_image
     reader = LocalOCR(max_side=1280, threads=4, backend="openvino")
     records = json.loads((args.directory/"analysis.json").read_text())["rows"]
     records = [r for r in records if r["case"]!="00-cold" and r["timed"] and not r["repeated"]]

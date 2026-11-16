@@ -150,13 +150,7 @@ The source runtime and installed wheel were not changed. Settings was restored,
 temporary forwarding rules were removed, and no screenshot/input helpers remained
 running. No commit or push was made.
 
-Run with this workspace's `.venv/androidtestkit/Scripts/python.exe`:
-
-```text
-benchmarks/android/binary_cold_comparison.py --serial RFCR91GWXLX --output artifacts/android-binary-capture/NEW
-benchmarks/android/startup_poll_comparison.py --serial RFCR91GWXLX --output artifacts/android-startup-poll/NEW
--m unittest discover -s tests -p test_binary_capture_probe.py -v
-```
+For a runnable device test, use the [local Android fixture](airtestide.md).
 
 Raw results, telemetry, hashes and screenshots remain ignored in
 `artifacts/android-binary-capture/cold-development/` and

@@ -12,7 +12,7 @@ import cv2
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from examples.genshin.profile import classify, has_world_hud, ocr_image, entry_button, matching_line
+from benchmarks.android.frame_analysis import classify, has_world_hud, ocr_image, entry_button, matching_line
 
 
 def make_engine(args, metadata):

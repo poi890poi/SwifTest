@@ -1,7 +1,7 @@
 """Check sensor parsing so a stale or missing reading cannot become a zero."""
 import unittest
 
-from benchmarks.android.compare_genshin import parse_temperatures, temperature_summary
+from benchmarks.android.temperature import parse_temperatures, temperature_summary
 
 
 class TemperatureTests(unittest.TestCase):

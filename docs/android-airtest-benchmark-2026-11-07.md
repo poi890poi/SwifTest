@@ -71,7 +71,7 @@ Retain this benchmark as the baseline for future work. It supports a speed advan
 
 ## Reproduce and inspect
 
-See [protocol and commands](../benchmarks/android/README.md). The scripts are [Airtest](../examples/genshin/airtest_teleport.py) and [TestKit adapter](../benchmarks/android/testkit_teleport.py).
+The measurements used the separately installed Airtest 1.4.3 Python library on this device and workload. The [current benchmark guide](../benchmarks/android/README.md) uses a local Android fixture.
 
 Raw local evidence: `artifacts/airtest-benchmark/holdout-20261107/`. `metadata.json` records code/assets hashes, environment packages and settings; per-trial directories contain temperature samples, logs, state captures and independent ADB arrival screenshots. These generated files are ignored by Git.
 

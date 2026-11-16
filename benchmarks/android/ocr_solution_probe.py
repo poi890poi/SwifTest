@@ -13,7 +13,7 @@ import cv2
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from swiftest.textmatch import TextPattern
-from examples.genshin.profile import ocr_image
+from benchmarks.android.frame_analysis import ocr_image
 
 
 def prepare_resource(destination):

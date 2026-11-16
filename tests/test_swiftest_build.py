@@ -20,7 +20,7 @@ class BuildTests(unittest.TestCase):
                         "docs/swiftest.md": "# SwifTest\n",
                         "docs/android-usage.md": "# Script guide\n",
                         "examples/starter/test_navigation.py": "# example\n",
-                        "examples/genshin/assets/teleport.png": "shipped template",
+                        "examples/airtestide/Loading.air/start.png": "shipped template",
                         "scripts/build_swiftest.py": "# build entry\n",
                         "tests/test_example.py": "# test\n",
                         "swiftest/__init__.py": "# current source\n",
@@ -29,7 +29,8 @@ class BuildTests(unittest.TestCase):
                     "swiftest/__pycache__/cached.pyc": "cache",
                     "swiftest/assets/trace.json": "raw telemetry",
                     "artifacts/screenshot.png": "private capture",
-                    "examples/genshin/debug.png": "unselected capture",
+                    "examples/airtestide/Loading.air/debug.png": "unselected capture",
+                    "examples/retired/profile.py": "old live runner",
                     "other_project/private.txt": "unrelated"}
             for name, content in dict(selected, **junk).items():
                 path = root / name

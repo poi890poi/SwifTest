@@ -1,6 +1,5 @@
 """Latency controls retain default OCR behavior and bounded workflow input."""
 import sys
-import tempfile
 import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -9,13 +8,7 @@ import numpy as np
 
 from swiftest.ocr import LocalOCR
 from swiftest.workflow import interval
-from examples.genshin.profile import Runner, entry_button, brightness_percentile, ocr_image
-
-
-def screen(text, y, server=False):
-    rows = [(text, 1100, y)] + ([("Asia", 1150, 880)] if server else [])
-    return dict(width=2400, height=1080, lines=[dict(text=t, words=[dict(
-        x=x, y=y, width=100, height=30)]) for t, x, y in rows])
+from benchmarks.android.frame_analysis import brightness_percentile, ocr_image
 
 
 class SpeedTests(unittest.TestCase):
@@ -67,36 +60,3 @@ class SpeedTests(unittest.TestCase):
         for value in (0, -1, float("nan")):
             with self.assertRaises(ValueError):
                 interval("world", 0, False, max_interactive=value)
-
-    def test_entry_identity_survives_ocr_spelling_variants(self):
-        first = entry_button(screen("開始遊戲", 490, True))
-        changed = entry_button(screen("開始游獻", 490, True))
-        next_screen = entry_button(screen("輕按螢幕進入", 990))
-        self.assertEqual(first["stage"], changed["stage"])
-        self.assertNotEqual(first["stage"], next_screen["stage"])
-
-    def run_entry_pair(self, second):
-        with tempfile.TemporaryDirectory() as directory:
-            args = SimpleNamespace(output=directory, timeout=20, inspect=False, poll=.2)
-            runner = Runner(Mock(), args)
-            runner.observe = Mock(side_effect=[("start", screen("開始遊戲", 490, True), None),
-                                               ("start", second, None), ("world", {}, None)])
-            runner.tap = Mock(return_value=True)
-            sequence = Mock(sent=None)
-            sequence.advance.return_value = True
-            with patch("examples.genshin.profile.TouchSequence", return_value=sequence), \
-                 patch("examples.genshin.profile.time.sleep"), \
-                 patch("examples.genshin.profile.time.monotonic", return_value=100), \
-                 patch("cv2.imwrite", return_value=True):
-                runner.run()
-            return runner.tap.call_count
-
-    def test_new_entry_screen_does_not_wait_for_previous_cooldown(self):
-        self.assertEqual(self.run_entry_pair(screen("輕按螢幕進入", 990)), 2)
-
-    def test_same_entry_ocr_variant_does_not_bypass_cooldown(self):
-        self.assertEqual(self.run_entry_pair(screen("開始游獻", 490, True)), 1)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -12,7 +12,7 @@ from rapidocr_onnxruntime import RapidOCR
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from examples.genshin.profile import classify, has_world_hud, ocr_image
+from benchmarks.android.frame_analysis import classify, has_world_hud, ocr_image
 
 
 def main():

@@ -30,8 +30,8 @@ execution deadline with the runner's `--timeout` option. Geometry can describe
 the target directly, for example `Relative("teleport.png", below="waypoint.png")`.
 See [launch and geometry examples](docs/android-usage.md#launch-through-entry-screens).
 
-For a complete example with actual PNGs, see the
-[Genshin script and template gallery](examples/genshin/README.md).
+Try the [loading-screen fixture](docs/airtestide.md) for a complete image script,
+an animated screen and a template you can edit in AirtestIDE.
 `Template(...)` adds options such as regions, scales and masks. Named catalogs,
 rendered text, native selectors and explicit checkpoints remain available when needed.
 
@@ -66,8 +66,7 @@ examples, tests and build script; no AriaTrace checkout is needed.
 ```text
 python -m pip install "setuptools>=61" wheel
 python scripts/build_swiftest.py
-python -m unittest discover -s tests -p "test_swiftest*.py"
-python -m unittest discover -s tests -p "test_genshin*.py"
+python -m unittest discover -s tests
 ```
 
 The build writes a wheel, a complete source archive and `SHA256SUMS.txt` to
@@ -86,7 +85,7 @@ package description.
 | --- | --- |
 | `swiftest/` | Runtime library and CLI |
 | `docs/` | Usage, API, requirements and concise research findings |
-| `examples/` | Starter, Settings, visual game and configured-variant examples |
+| `examples/` | Starter, Settings, loading-screen and configured-variant examples |
 | `tests/` | Offline contracts and optional Android fixture source |
 | `scripts/` | Standalone package builder |
 | `benchmarks/android/` | Optional experiment source and reproduction notes |
@@ -96,7 +95,13 @@ a region still needs evaluation. Streaming supplies frame notifications, not
 semantic game events. Regional OCR can change recognition and can be slower with
 some scaling settings. See the [measured results and limits](docs/android-visual-evaluation-2026-11-07.md).
 
-The six small PNGs in `examples/genshin/assets/` are shipped example inputs.
-Historical benchmark artifacts, full-screen captures, copied dependencies and
-device recordings are not included. They are not installation or test requirements.
-See [project origin](docs/origin.md) for the source provenance.
+The example icon is original SwifTest fixture artwork. The Android example runs
+locally without a game account. Use recordings and apps you have permission to
+test and share.
+
+## Licensing and compatibility
+
+The authors have not selected an open-source license for the SwifTest code or
+fixture artwork. Third-party components keep their own licenses. SwifTest is an
+independent project. Airtest and AirtestIDE are referenced to identify supported
+script syntax and the optional external editor. [Airtest library license](https://github.com/AirtestProject/Airtest/blob/master/LICENSE) · [AirtestIDE download and terms](https://airtest.netease.com/download.html)

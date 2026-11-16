@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
     import cv2
     import numpy as np
-    from examples.genshin.profile import is_loading_screen, ocr_image
+    from benchmarks.android.frame_analysis import is_loading_screen, ocr_image
     summary, all_rows = [], []
     for manifest in sorted(args.directory.glob("*/diagnostic.json")):
         rows = json.loads(manifest.read_text())

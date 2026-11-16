@@ -23,7 +23,9 @@ def stage_source(root, destination):
     files = [root / name for name in ("pyproject.toml", "README.md", "MANIFEST.in", ".gitignore")]
     for directory, extensions in (
         ("swiftest", {".py", ".java"}), ("docs", {".md"}),
-        ("examples", {".py", ".json", ".md"}), ("scripts", {".py"}),
+        *((f"examples/{name}", {".py", ".json", ".md"})
+          for name in ("airtestide", "settings", "starter", "variants")),
+        ("scripts", {".py"}),
         ("tests", {".py", ".java", ".xml"}),
         ("benchmarks/android", {".py", ".java", ".md"}),
     ):
@@ -33,9 +35,7 @@ def stage_source(root, destination):
     for required in ("swiftest/__init__.py", "swiftest/assets/IntentScreenshot.java"):
         if root / required not in files:
             raise FileNotFoundError(root / required)
-    # Shipped example inputs are product assets, unlike screenshots in artifacts/.
-    files += sorted((root / "examples/genshin/assets").glob("*.png"))
-    files += list((root / "examples/airtestide/Level.air").glob("level.png"))
+    files.append(root / "examples/airtestide/Loading.air/start.png")
     for source in files:
         target = destination / source.relative_to(root)
         target.parent.mkdir(parents=True, exist_ok=True)

@@ -25,13 +25,14 @@ def main():
     classes = out/"classes"
     classes.mkdir(exist_ok=True)
     run("javac", "-encoding", "UTF-8", "-source", "8", "-target", "8", "-classpath", android,
-        "-d", classes, source/"MainActivity.java")
+        "-d", classes, source/"MainActivity.java", source/"LoadingActivity.java")
     run("java", "-cp", build/"lib/d8.jar", "com.android.tools.r8.D8", "--min-api", "26",
         "--lib", android, "--output", out, *classes.rglob("*.class"))
     run(build/("aapt2"+suffix), "link", "-I", android, "--manifest", source/"AndroidManifest.xml",
         "-o", out/"unsigned.apk")
     with zipfile.ZipFile(out/"unsigned.apk", "a", zipfile.ZIP_DEFLATED) as apk:
         apk.write(out/"classes.dex", "classes.dex")
+        apk.write(source.parents[1]/"examples/airtestide/Loading.air/start.png", "assets/start.png")
     run(build/("zipalign"+suffix), "-f", "4", out/"unsigned.apk", out/"aligned.apk")
     if not (out/"fixture.keystore").exists():
         run("keytool", "-genkeypair", "-keystore", out/"fixture.keystore", "-alias", "fixture",

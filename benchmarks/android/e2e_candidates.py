@@ -3,10 +3,8 @@
 import math
 import re
 import shlex
-import time
 
 from swiftest import DeviceError
-from examples.genshin.profile import Phone
 
 
 def checked_tap(device, x, y, width, height, package, blocked_window="GameBooster Lock Screen", *, compact=False, narrow=False):
@@ -54,28 +52,3 @@ if input tap {x} {y}; then printf 'SENT\\n'; else printf 'INPUT_ERROR\\n'; fi
     if response != "SENT":
         raise DeviceError("Guarded input withheld or failed: " + response)
     return True
-
-
-class GuardedPhone(Phone):
-    def __init__(self, session, *, compact=False, narrow=False):
-        super().__init__(session)
-        self.compact, self.narrow = compact, narrow
-
-    def tap(self, x, y, width, height):
-        # Retain the shared Session policy if the caller registered extra rules.
-        if self.session.popups or self.session.busy_states:
-            return super().tap(x, y, width, height)
-        if not checked_tap(self.session.device, x, y, width, height, self.session.device.package,
-                           compact=self.compact, narrow=self.narrow):
-            if self.protection_released_at is not None and time.monotonic()-self.protection_released_at < 10:
-                raise DeviceError("Samsung Game Booster touch protection still covers the game.")
-            if not self.in_focus():
-                raise DeviceError("Focus changed before overlay recovery")
-            cx, cy = str(width//2), str(height//2)
-            self.shell("input", "tap", cx, cy)
-            self.shell("input", "swipe", cx, cy, str(int(width*.78)), cy, "450")
-            self.protection_released_at = time.monotonic()
-            return False
-        self.session.stats["input_events"] += 1
-        self.session.events.append({"touch": [round(x), round(y)]})
-        return True

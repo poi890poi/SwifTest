@@ -85,8 +85,10 @@ class Template:
         resolution=(),
         rgb=False,
     ):
+        if target_pos == 0:
+            target_pos = 5  # Airtest also accepts zero for the center.
         if target_pos not in range(1, 10):
-            raise ValueError("target_pos must be 1 to 9.")
+            raise ValueError("target_pos must be 0 (center) or 1 to 9.")
         if record_pos is not None and len(record_pos) != 2:
             raise ValueError("Invalid record_pos.")
         if resolution and (len(resolution) != 2 or min(resolution) <= 0):

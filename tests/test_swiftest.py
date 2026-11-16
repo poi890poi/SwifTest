@@ -21,7 +21,7 @@ from swiftest import (
 from swiftest import compat
 from swiftest.convert import convert
 from swiftest.intent import execute, load_catalog
-from swiftest.cli import run_script
+from swiftest.cli import run_script, suite
 
 
 class Frames:
@@ -245,7 +245,7 @@ class FrameworkTests(unittest.TestCase):
         rng = np.random.default_rng(12)
         img = rng.integers(30, 240, (12, 14, 3), dtype=np.uint8)
         self.screen[30:42, 55:69] = img
-        template = compat.Template(self.asset("air.png", img), target_pos=5)
+        template = compat.Template(self.asset("air.png", img), target_pos=0)
         with self.session:
             self.assertEqual(compat.exists(template), (62, 36))
             self.assertEqual(compat.touch(template), (62, 36))
@@ -253,3 +253,20 @@ class FrameworkTests(unittest.TestCase):
             self.assertFalse(compat.exists(template))
             with self.assertRaises(TargetNotFoundError):
                 compat.wait(template, timeout=0)
+
+    def test_editable_air_project_runs_with_native_unique_match_policy(self):
+        bundle = Path(__file__).resolve().parents[1] / 'examples/airtestide/Level.air'
+        entry, = suite(bundle)
+        self.session.base = bundle
+        tile = cv2.imread(str(bundle / 'level.png'))
+        h, w = tile.shape[:2]
+        self.screen[12:12+h, 30:30+w] = tile
+        with self.session:
+            case, = run_script(entry, self.session)
+            self.assertEqual(case['status'], 'passed')
+            self.assertEqual(case['outcome']['last_valid_result']['result'],
+                             [30 + w//2, 12 + h//2])
+            self.screen[70:70+h, 30:30+w] = tile
+            with self.assertRaises(AmbiguousTargetError):
+                run_script(entry, self.session)
+        self.assertEqual(self.device.taps, [])

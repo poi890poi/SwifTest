@@ -35,6 +35,7 @@ def stage_source(root, destination):
             raise FileNotFoundError(root / required)
     # Shipped example inputs are product assets, unlike screenshots in artifacts/.
     files += sorted((root / "examples/genshin/assets").glob("*.png"))
+    files += list((root / "examples/airtestide/Level.air").glob("level.png"))
     for source in files:
         target = destination / source.relative_to(root)
         target.parent.mkdir(parents=True, exist_ok=True)
